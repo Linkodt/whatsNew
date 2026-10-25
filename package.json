@@ -1,6 +1,6 @@
 {
   "name": "dsh-updatewhat",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Agent-facing upgrade evidence for DeepSeek Harness: release notes, breaking-change commits, and a migration brief.",
   "type": "module",
   "license": "MIT",

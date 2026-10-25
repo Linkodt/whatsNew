@@ -12,7 +12,8 @@ Upgrading a dependency means reading dozens of release notes and commits, then t
 
 ## What it does
 
-- Fetches releases in the requested version range (up to two GitHub API pages), with a `v`-prefix fallback for tags.
+- Fetches releases in the requested version range (up to two GitHub API pages), with a `v`-prefix fallback for tags. `from` is inclusive; `to` is an inclusive upper bound at its own precision, so `to=18` admits every `18.x.y` and `to=18.1` admits `18.1.x`.
+- Skips prereleases unless `to` is itself a prerelease, so a stable upgrade does not pick up rc or beta notes that sit between the two versions.
 - Compares the two tags and keeps commits that mention breaking changes, removals, deprecations, migrations, refactors, features, fixes, security, performance, or CVEs.
 - Runs the releases and compare requests in parallel; if one side fails, the pack still carries the other side plus a collection warning.
 - Renders one Markdown evidence pack with counts, compare and commit links, truncation notes, and concrete next steps.
@@ -78,7 +79,7 @@ upgrade_guide repo=facebook/react from=17.0.0 to=18.0.0
 |---|---|---|
 | `repo` | yes | `owner/repo`, `https://github.com/owner/repo`, or `github.com/owner/repo`. |
 | `from` | yes | Current version or tag, e.g. `17.0.0` or `v17.0.0`. |
-| `to` | yes | Target version or tag, e.g. `18.2.0` or `v18.2.0`. |
+| `to` | yes | Target version or tag, e.g. `18.2.0` or `v18.2.0`. A partial version is an inclusive upper bound: `18` accepts every `18.x.y`, `18.1` accepts `18.1.x`. |
 | `maxReleases` | no | Release notes to include, 1–50. Defaults to 20. |
 | `maxCommits` | no | Important commits to list, 1–300. Defaults to 120. |
 
@@ -88,7 +89,7 @@ The pack contains:
 
 - source and compare links, plus release/commit counts;
 - **Collection warnings** when one GitHub endpoint failed;
-- **Release notes** for the range, oldest first;
+- **Release notes** for the range, oldest first. When `maxReleases` caps the range, the target release and notes that mention breaking changes, deprecations, migrations, removals, security, or incompatibilities are kept first, and recency fills the remaining slots;
 - **Important commits** with short SHA, date, subject, and commit link;
 - **Next steps for the agent**: confirm the manifest, write the guide with fixed sections, apply the migration, run the checks, keep uncertain APIs as open questions.
 
@@ -103,10 +104,10 @@ Set the token in the environment that launches the Harness to move from 60 to 5,
 
 ## How it works
 
-1. `fetchReleases` reads up to two pages of releases and keeps the tags inside the range.
+1. `fetchReleases` reads up to two pages of releases and keeps the tags inside the range, comparing `to` at its own precision and dropping prereleases unless `to` is one.
 2. `compareTags` calls GitHub's compare endpoint, retrying with and without a `v` prefix.
 3. Commits are filtered by keywords and conventional-commit breaking markers (`feat!:`, `BREAKING CHANGE`).
-4. The pack is assembled with caps on per-release and total release text, so one huge changelog cannot flood the context.
+4. The pack is assembled with caps on per-release and total release text, so one huge changelog cannot flood the context. Under a cap, change-signal notes are selected before ordinary patches and the result is re-sorted chronologically.
 
 Each HTTP request opens its own connection, has a 45-second deadline, and is bounded to 12 MiB. A failed side becomes a warning rather than a failed call when the other side succeeded.
 
@@ -116,6 +117,8 @@ Each HTTP request opens its own connection, has a 45-second deadline, and is bou
 - GitHub compare returns at most 250 commits per response; the pack says so when the range is larger.
 - Release notes cover at most the newest 200 releases; a range that starts further back may miss older notes.
 - Per-release notes are capped at 6,000 characters and 40,000 characters total.
+- Only `to` accepts a partial version; `from` must be the exact version currently deployed, because it is the inclusive lower bound.
+- Prereleases are included only when `to` is a prerelease.
 - The plugin does not edit manifests, run package managers, or apply the migration by itself; the agent uses its normal workspace tools.
 - Discover has no upgrade action; publishing a new version means a new index entry and a reinstall.
 
@@ -126,7 +129,7 @@ node --check index.js
 node test/offline.mjs
 ```
 
-The test starts a local HTTP server that stands in for `api.github.com` and covers range filtering, prereleases, `v` prefixes, redirects, rate-limit reporting, partial packs, and argument validation. It does not touch the network. There are no runtime dependencies and no build step.
+The test starts a local HTTP server that stands in for `api.github.com` and covers range filtering, partial and prerelease bounds, cap priority, `v` prefixes, redirects, rate-limit reporting, partial packs, and argument validation. It does not touch the network. There are no runtime dependencies and no build step.
 
 ## Publishing
 

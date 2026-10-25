@@ -12,7 +12,8 @@
 
 ## 它能做什么
 
-- 拉取指定版本区间内的 release（最多两页 GitHub API），标签带不带 `v` 都能匹配。
+- 拉取指定版本区间内的 release（最多两页 GitHub API），标签带不带 `v` 都能匹配。`from` 精确比较且包含边界；`to` 按自身精度作为包含边界，`to=18` 接受所有 `18.x.y`，`to=18.1` 接受 `18.1.x`。
+- 除非 `to` 本身是预发布版本，否则跳过 rc、beta 等预发布 release，稳定版升级不会混入中间的候选版本。
 - 对比两个 tag，保留包含 breaking、remove、deprecate、migrate、refactor、feat、fix、security、performance、CVE 等关键词的 commit。
 - releases 和 compare 两个请求并行；一边失败时，仍返回另一边的证据并附上 collection warning。
 - 输出一份 Markdown 证据包：数量统计、compare 与 commit 链接、截断说明、以及明确的下一步。
@@ -78,7 +79,7 @@ upgrade_guide repo=facebook/react from=17.0.0 to=18.0.0
 |---|---|---|
 | `repo` | 是 | `owner/repo`、`https://github.com/owner/repo` 或 `github.com/owner/repo`。 |
 | `from` | 是 | 当前版本或 tag，例如 `17.0.0`、`v17.0.0`。 |
-| `to` | 是 | 目标版本或 tag，例如 `18.2.0`、`v18.2.0`。 |
+| `to` | 是 | 目标版本或 tag，例如 `18.2.0`、`v18.2.0`。可以只写前缀，此时按该精度作为包含边界：`18` 接受所有 `18.x.y`，`18.1` 接受 `18.1.x`。 |
 | `maxReleases` | 否 | 最多包含多少条 release note，1–50，默认 20。 |
 | `maxCommits` | 否 | 最多列出多少个重要 commit，1–300，默认 120。 |
 
@@ -88,7 +89,7 @@ upgrade_guide repo=facebook/react from=17.0.0 to=18.0.0
 
 - 源仓库与 compare 链接，以及 release / commit 数量；
 - **Collection warnings**：某个 GitHub 端点失败时的说明；
-- **Release notes**：区间内的 release，按时间从旧到新；
+- **Release notes**：区间内的 release，按时间从旧到新。当 `maxReleases` 触发截断时，优先保留目标版本，以及提到 breaking、deprecation、migration、removal、security、incompatible 的 release；剩余名额按新旧补齐；
 - **Important commits**：短 SHA、日期、标题和 commit 链接；
 - **Next steps for the agent**：确认清单文件、按固定章节写指南、执行迁移、跑检查、不确定的 API 留成 open question。
 
@@ -103,10 +104,10 @@ upgrade_guide repo=facebook/react from=17.0.0 to=18.0.0
 
 ## 工作原理
 
-1. `fetchReleases` 最多读两页 release，筛出区间内的 tag。
+1. `fetchReleases` 最多读两页 release，筛出区间内的 tag：`to` 按自身精度比较，非预发布目标会丢掉 rc、beta。
 2. `compareTags` 调 GitHub compare，标签带不带 `v` 都会重试。
 3. commit 按关键词和 conventional commit 的破坏性标记（`feat!:`, `BREAKING CHANGE`）筛选。
-4. 组装证据包时对单条和总 release 文本设上限，避免一个超大 changelog 灌爆上下文。
+4. 组装证据包时对单条和总 release 文本设上限，避免一个超大 changelog 灌爆上下文。触发上限时先选带变更信号的 note，再按新旧补齐，最后恢复时间顺序。
 
 每个 HTTP 请求独立连接、45 秒截止、响应上限 12 MiB。一边失败而另一边成功时，失败会变成 warning，而不是整次调用失败。
 
@@ -116,6 +117,8 @@ upgrade_guide repo=facebook/react from=17.0.0 to=18.0.0
 - compare 单次最多返回 250 个 commit，超出时证据包会注明。
 - release note 最多覆盖最新 200 个 release，起点更早的区间可能缺旧 note。
 - 单条 release 截断到 6,000 字符，总计 40,000 字符。
+- 只有 `to` 支持省略版本号；`from` 是包含边界，必须写当前实际部署的完整版本。
+- 只有 `to` 本身是预发布版本时，才会包含预发布 release。
 - 插件不会自己改清单、跑包管理器或执行迁移；这些由 agent 用常规工作区工具完成。
 - Discover 没有“升级”按钮；发新版等于新增索引条目并让用户重装。
 
@@ -126,7 +129,7 @@ node --check index.js
 node test/offline.mjs
 ```
 
-测试会起一个本地 HTTP 服务替代 `api.github.com`，覆盖区间过滤、预发布版本、`v` 前缀、重定向、限流报错、半边失败和参数校验。测试不访问网络。运行时没有依赖，也没有构建步骤。
+测试会起一个本地 HTTP 服务替代 `api.github.com`，覆盖区间过滤、部分版本与预发布边界、截断优先级、`v` 前缀、重定向、限流报错、半边失败和参数校验。测试不访问网络。运行时没有依赖，也没有构建步骤。
 
 ## 发布
 
