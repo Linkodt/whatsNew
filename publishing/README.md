@@ -19,6 +19,12 @@ plugin_manager install_bundle
 
 The plugin manager runs `git ls-remote` against the host before `pnpm add`, so the repository must be reachable without an interactive credential prompt. This repository is public.
 
+If `github.com` HTTPS is blocked on the user's network, add the SSH rewrite once and keep the same install spec:
+
+```bash
+git config --global url."git@github.com:".insteadOf "https://github.com/"
+```
+
 ## 2. Custom plugin market (Discover card)
 
 The root [`market.json`](../market.json) is a format-1 index. It is already configured with the package name, the repository, an inline icon, and one pinned version.
@@ -28,6 +34,15 @@ Host it at a final HTTPS URL — no redirects, because the reader refuses them:
 ```
 https://raw.githubusercontent.com/Linkodt/whatsNew/main/market.json
 ```
+
+For networks where `raw.githubusercontent.com` is blocked, use a direct CDN mirror (both tested to return the document without a redirect):
+
+```
+https://fastly.jsdelivr.net/gh/Linkodt/whatsNew@main/market.json
+https://gcore.jsdelivr.net/gh/Linkodt/whatsNew@main/market.json
+```
+
+jsDelivr caches a branch URL for a while; a newly pushed index can take time to appear. For an immutable URL, pin the tag or commit instead (`@v0.2.1`), accepting that the URL changes with each release.
 
 Users then:
 

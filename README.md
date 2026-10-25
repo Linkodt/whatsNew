@@ -25,8 +25,9 @@ Upgrading a dependency means reading dozens of release notes and commits, then t
 This repository hosts a format-1 market index at [`market.json`](market.json). In the Harness Web UI:
 
 1. Open **Plugins** → **Experimental plugins** → **More**, and enable **Custom plugin markets**.
-2. Open **Discover** → **Add index source**, and enter:
-   `https://raw.githubusercontent.com/Linkodt/whatsNew/main/market.json`
+2. Open **Discover** → **Add index source**, and enter one of:
+   - `https://fastly.jsdelivr.net/gh/Linkodt/whatsNew@main/market.json` — CDN mirror, works where `raw.githubusercontent.com` is blocked;
+   - `https://raw.githubusercontent.com/Linkodt/whatsNew/main/market.json` — canonical GitHub URL.
 3. Install **UpdateWhat** from the card.
 
 The index is unsigned: only add market sources you trust.
@@ -39,6 +40,14 @@ plugin_manager install_bundle
 ```
 
 Use the commit listed in [`market.json`](market.json). The plugin has no build step, so a Git install runs the published files directly.
+
+On a network where `github.com` HTTPS is blocked, route Git through SSH before installing:
+
+```bash
+git config --global url."git@github.com:".insteadOf "https://github.com/"
+```
+
+The install spec stays the same; Git rewrites it to SSH. Publishing to npm is the other reliable option.
 
 ### From a local checkout
 

@@ -25,8 +25,9 @@
 本仓库在根目录提供 format 1 的市场索引 [`market.json`](market.json)。在 Harness Web UI 里：
 
 1. 打开 **Plugins** → **Experimental plugins** → **More**，启用 **Custom plugin markets**。
-2. 打开 **Discover** → **Add index source**，填入：
-   `https://raw.githubusercontent.com/Linkodt/whatsNew/main/market.json`
+2. 打开 **Discover** → **Add index source**，填入下面任一地址：
+   - `https://fastly.jsdelivr.net/gh/Linkodt/whatsNew@main/market.json` —— CDN 镜像，`raw.githubusercontent.com` 被墙时可用；
+   - `https://raw.githubusercontent.com/Linkodt/whatsNew/main/market.json` —— GitHub 原始地址。
 3. 在卡片上安装 **UpdateWhat**。
 
 市场索引没有签名，只添加你信任的来源。
@@ -39,6 +40,14 @@ plugin_manager install_bundle
 ```
 
 commit 用 [`market.json`](market.json) 里钉死的那一个。插件没有构建步骤，Git 安装会直接运行仓库里的文件。
+
+如果 `github.com` 的 HTTPS 被阻断，先把 Git 改走 SSH，再执行上面的安装：
+
+```bash
+git config --global url."git@github.com:".insteadOf "https://github.com/"
+```
+
+安装 spec 不用改，Git 会自动改写成 SSH。另一个可靠办法是发布到 npm。
 
 ### 从本地目录
 
