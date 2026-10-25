@@ -37,6 +37,15 @@
       },
       "versions": [
         {
+          "version": "0.3.0",
+          "publishTimestamp": 1792901495,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/Linkodt/whatsNew",
+            "commit": "3cff3b8253126df49459a2f0b1b9d8806f4ea4b7"
+          }
+        },
+        {
           "version": "0.2.1",
           "publishTimestamp": 1792899807,
           "source": {
