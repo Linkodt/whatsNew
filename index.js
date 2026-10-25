@@ -31,11 +31,11 @@ const MAX_REDIRECTS = 5
 const VERSION = '0.3.0'
 
 /** Release-note signals that outrank ordinary notes when the cap bites. */
-const IMPORTANT_RELEASE_PATTERN = /breaking|deprecat|migrat|removed|removal|security|cve-|incompatible/i
+const IMPORTANT_RELEASE_PATTERN = /breaking|deprecat|migrat|remov|security|cve-|incompatib/i
 
-/** A date already written into a release name, in ISO or month-name form. */
+/** A date already written into a release name: ISO, slash/dot, or month-name form. */
 const DATE_IN_TEXT =
-  /\b\d{4}-\d{2}-\d{2}\b|\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}\b/i
+  /\b\d{4}[-/.]\d{1,2}(?:[-/.]\d{1,2})?\b|\b\d{1,2}[-/.]\d{1,2}[-/.]\d{4}\b|\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?\s+(?:\d{1,2}(?:st|nd|rd|th)?,?\s+)?\d{4}\b/i
 
 /** Keywords taken from the reference implementation, plus conventional-commit signals. */
 const IMPORTANT_KEYWORDS = [
@@ -556,8 +556,8 @@ function filterReleases(releases, from, to) {
  *
  * A note that signals a breaking change, deprecation, migration, removal,
  * security issue, or incompatibility scores 2; the newest release in the range
- * scores 1. Recency breaks ties, so the target note and every capped-out
- * breaking note survive before ordinary patches.
+ * scores 3 so the target always outranks signal notes and survives the cap.
+ * Recency breaks ties, so capped-out signal notes beat ordinary patches.
  *
  * @param releases In-range releases, oldest first.
  * @param limit Maximum release count.
@@ -570,7 +570,7 @@ function pickReleases(releases, limit) {
       release,
       index,
       body: releaseBody(release),
-      score: (isImportantRelease(release) ? 2 : 0) + (index === newestIndex ? 1 : 0),
+      score: (isImportantRelease(release) ? 2 : 0) + (index === newestIndex ? 3 : 0),
     }))
     .sort((a, b) => b.score - a.score || b.index - a.index)
 

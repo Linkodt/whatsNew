@@ -12,7 +12,7 @@ Upgrading a dependency means reading dozens of release notes and commits, then t
 
 ## What it does
 
-- Fetches releases in the requested version range (up to two GitHub API pages), with a `v`-prefix fallback for tags. `from` is inclusive; `to` is an inclusive upper bound at its own precision, so `to=18` admits every `18.x.y` and `to=18.1` admits `18.1.x`.
+- Fetches releases in the requested version range (up to two GitHub API pages), with a `v`-prefix fallback for tags. `from` is inclusive; `to` is an inclusive upper bound at its own precision, so `to=18` admits every `18.x.y` and `to=18.1` admits `18.1.x`. A partial `to` narrows release notes only; commit comparison needs the exact target tag.
 - Skips prereleases unless `to` is itself a prerelease, so a stable upgrade does not pick up rc or beta notes that sit between the two versions.
 - Compares the two tags and keeps commits that mention breaking changes, removals, deprecations, migrations, refactors, features, fixes, security, performance, or CVEs.
 - Runs the releases and compare requests in parallel; if one side fails, the pack still carries the other side plus a collection warning.
@@ -79,7 +79,7 @@ upgrade_guide repo=facebook/react from=17.0.0 to=18.0.0
 |---|---|---|
 | `repo` | yes | `owner/repo`, `https://github.com/owner/repo`, or `github.com/owner/repo`. |
 | `from` | yes | Current version or tag, e.g. `17.0.0` or `v17.0.0`. |
-| `to` | yes | Target version or tag, e.g. `18.2.0` or `v18.2.0`. A partial version is an inclusive upper bound: `18` accepts every `18.x.y`, `18.1` accepts `18.1.x`. |
+| `to` | yes | Target version or tag, e.g. `18.2.0` or `v18.2.0`. A partial version is an inclusive upper bound: `18` accepts every `18.x.y`, `18.1` accepts `18.1.x`. Release notes only — commit comparison needs the full tag. |
 | `maxReleases` | no | Release notes to include, 1–50. Defaults to 20. |
 | `maxCommits` | no | Important commits to list, 1–300. Defaults to 120. |
 

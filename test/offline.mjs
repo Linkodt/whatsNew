@@ -37,6 +37,16 @@ const capReleases = Array.from({ length: 25 }, (_, index) => {
   }
 })
 
+// More signal notes than cap slots must not push the target out.
+const crowdedReleases = [
+  { tag_name: 'v40.0.0', name: '40.0.0', draft: false, prerelease: false, published_at: '2024-10-01T00:00:00Z', body: 'Stable target.', html_url: 'https://github.com/crowded/lib/releases/tag/v40.0.0' },
+  { tag_name: 'v39.0.0', name: '39.0.0', draft: false, prerelease: false, published_at: '2024-09-01T00:00:00Z', body: 'Remove the legacy loader.', html_url: 'https://github.com/crowded/lib/releases/tag/v39.0.0' },
+  { tag_name: 'v38.0.0', name: '38.0.0', draft: false, prerelease: false, published_at: '2024-08-01T00:00:00Z', body: 'Removed the old cache.', html_url: 'https://github.com/crowded/lib/releases/tag/v38.0.0' },
+  { tag_name: 'v37.0.0', name: '37.0.0', draft: false, prerelease: false, published_at: '2024-07-01T00:00:00Z', body: 'Breaking: config schema changed.', html_url: 'https://github.com/crowded/lib/releases/tag/v37.0.0' },
+  { tag_name: 'v36.0.0', name: '36.0.0', draft: false, prerelease: false, published_at: '2024-06-01T00:00:00Z', body: 'Deprecated the legacy adapter.', html_url: 'https://github.com/crowded/lib/releases/tag/v36.0.0' },
+  { tag_name: 'v35.0.0', name: '35.0.0', draft: false, prerelease: false, published_at: '2024-05-01T00:00:00Z', body: 'Routine maintenance notes.', html_url: 'https://github.com/crowded/lib/releases/tag/v35.0.0' },
+]
+
 // Non-SemVer tags exercise the string fallback.
 const exoticReleases = [
   { tag_name: 'release-2025-01', name: 'release-2025-01', draft: false, prerelease: false, published_at: '2025-01-15T00:00:00Z', body: 'Out of range', html_url: 'https://github.com/exotic/lib/releases/tag/release-2025-01' },
@@ -45,8 +55,10 @@ const exoticReleases = [
   { tag_name: 'release-2023-12', name: 'release-2023-12', draft: false, prerelease: false, published_at: '2023-12-15T00:00:00Z', body: 'Out of range', html_url: 'https://github.com/exotic/lib/releases/tag/release-2023-12' },
 ]
 
-// The release name repeats the publication date.
+// Release names that repeat their publication date in several forms.
 const datedReleases = [
+  { tag_name: 'v20.0.0', name: '20.0.0 (2024/06/01)', draft: false, prerelease: false, published_at: '2024-06-01T00:00:00Z', body: 'Notes', html_url: 'https://github.com/dated/lib/releases/tag/v20.0.0' },
+  { tag_name: 'v19.0.0', name: '19.0.0 (May 2024)', draft: false, prerelease: false, published_at: '2024-05-01T00:00:00Z', body: 'Notes', html_url: 'https://github.com/dated/lib/releases/tag/v19.0.0' },
   { tag_name: 'v18.0.0', name: '18.0.0 (April 1, 2024)', draft: false, prerelease: false, published_at: '2024-04-01T00:00:00Z', body: 'Notes', html_url: 'https://github.com/dated/lib/releases/tag/v18.0.0' },
 ]
 
@@ -131,7 +143,11 @@ const server = createServer((req, res) => {
     send(res, 200, datedReleases)
     return
   }
-  if (/^\/repos\/(?:edge|cap|exotic|dated)\/lib\/compare\//.test(path)) {
+  if (path === '/repos/crowded/lib/releases') {
+    send(res, 200, crowdedReleases)
+    return
+  }
+  if (/^\/repos\/(?:edge|cap|exotic|dated|crowded)\/lib\/compare\//.test(path)) {
     send(res, 200, { total_commits: 0, commits: [] })
     return
   }
@@ -264,12 +280,41 @@ checks.push([
   'CAP_PRIORITY: target + old breaking note + newest ordinary note, chronological, 22 omitted',
 ])
 
-const dated = await tool.execute({ repo: 'dated/lib', from: '17.0.0', to: '18.0.0' }, exec)
-const datedHeading = dated.markdown.split('\n').find((line) => line.startsWith('### v18.0.0')) ?? ''
-const dateAppearances = (datedHeading.match(/2024-04-01|April 1, 2024/gi) ?? []).length
+const crowded = await tool.execute({ repo: 'crowded/lib', from: '35.0.0', to: '40.0.0', maxReleases: 3 }, exec)
+const crowdedMarkdown = crowded.markdown
+const crowdedOrder =
+  crowdedMarkdown.indexOf('### v38.0.0 (') < crowdedMarkdown.indexOf('### v39.0.0 (') &&
+  crowdedMarkdown.indexOf('### v39.0.0 (') < crowdedMarkdown.indexOf('### v40.0.0 (')
 checks.push([
-  dated.releases === 1 && dateAppearances === 1 && datedHeading.includes('(2024-04-01)'),
-  'DUPLICATE_DATE: a release name that carries its date is rendered once',
+  crowded.releases === 6 &&
+    crowdedMarkdown.includes('### v40.0.0 (') &&
+    crowdedMarkdown.includes('### v39.0.0 (') &&
+    crowdedMarkdown.includes('Remove the legacy loader.') &&
+    crowdedMarkdown.includes('### v38.0.0 (') &&
+    crowdedMarkdown.includes('### v37.0.0 (') === false &&
+    crowdedOrder &&
+    crowdedMarkdown.includes('_3 more release note(s)'),
+  'CAP_TARGET: the target outranks more signal notes than slots, and "Remove" scores as a signal',
+])
+
+const single = await tool.execute({ repo: 'crowded/lib', from: '35.0.0', to: '40.0.0', maxReleases: 1 }, exec)
+checks.push([
+  single.markdown.includes('### v40.0.0 (') &&
+    single.markdown.includes('### v39.0.0 (') === false &&
+    single.markdown.includes('_5 more release note(s)'),
+  'CAP_TARGET: maxReleases=1 keeps the target over every older signal note',
+])
+
+const dated = await tool.execute({ repo: 'dated/lib', from: '17.0.0', to: '20.0.0' }, exec)
+checks.push([
+  dated.releases === 3 &&
+    dated.markdown.includes('### v18.0.0 (2024-04-01)') &&
+    dated.markdown.includes('### v19.0.0 (2024-05-01)') &&
+    dated.markdown.includes('### v20.0.0 (2024-06-01)') &&
+    dated.markdown.includes('April 1, 2024') === false &&
+    dated.markdown.includes('May 2024') === false &&
+    dated.markdown.includes('2024/06/01') === false,
+  'DUPLICATE_DATE: month-day, year-month, and slash dates in a name are rendered once',
 ])
 
 const exotic = await tool.execute({ repo: 'exotic/lib', from: 'release-2024-01', to: 'release-2024-06' }, exec)

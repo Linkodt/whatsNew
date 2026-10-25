@@ -12,7 +12,7 @@
 
 ## 它能做什么
 
-- 拉取指定版本区间内的 release（最多两页 GitHub API），标签带不带 `v` 都能匹配。`from` 精确比较且包含边界；`to` 按自身精度作为包含边界，`to=18` 接受所有 `18.x.y`，`to=18.1` 接受 `18.1.x`。
+- 拉取指定版本区间内的 release（最多两页 GitHub API），标签带不带 `v` 都能匹配。`from` 精确比较且包含边界；`to` 按自身精度作为包含边界，`to=18` 接受所有 `18.x.y`，`to=18.1` 接受 `18.1.x`。省略版本的 `to` 只用于筛选 release notes；commit 对比需要完整的 tag。
 - 除非 `to` 本身是预发布版本，否则跳过 rc、beta 等预发布 release，稳定版升级不会混入中间的候选版本。
 - 对比两个 tag，保留包含 breaking、remove、deprecate、migrate、refactor、feat、fix、security、performance、CVE 等关键词的 commit。
 - releases 和 compare 两个请求并行；一边失败时，仍返回另一边的证据并附上 collection warning。
@@ -79,7 +79,7 @@ upgrade_guide repo=facebook/react from=17.0.0 to=18.0.0
 |---|---|---|
 | `repo` | 是 | `owner/repo`、`https://github.com/owner/repo` 或 `github.com/owner/repo`。 |
 | `from` | 是 | 当前版本或 tag，例如 `17.0.0`、`v17.0.0`。 |
-| `to` | 是 | 目标版本或 tag，例如 `18.2.0`、`v18.2.0`。可以只写前缀，此时按该精度作为包含边界：`18` 接受所有 `18.x.y`，`18.1` 接受 `18.1.x`。 |
+| `to` | 是 | 目标版本或 tag，例如 `18.2.0`、`v18.2.0`。可以只写前缀，此时按该精度作为包含边界：`18` 接受所有 `18.x.y`，`18.1` 接受 `18.1.x`。只影响 release notes，commit 对比需要完整 tag。 |
 | `maxReleases` | 否 | 最多包含多少条 release note，1–50，默认 20。 |
 | `maxCommits` | 否 | 最多列出多少个重要 commit，1–300，默认 120。 |
 
