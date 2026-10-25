@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "UpdateWhat — Upgrade Evidence",
+    "description": "Collects GitHub releases and breaking-change commits for a version range, so the agent can write an upgrade guide and carry out the migration."
+  }
+}

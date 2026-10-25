@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "UpdateWhat 升级指南",
+    "description": "抓取 GitHub 两个版本之间的 release 与破坏性提交，交给 agent 生成升级指南并完成迁移。"
+  }
+}

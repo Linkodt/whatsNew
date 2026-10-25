@@ -1,0 +1,49 @@
+{
+  "name": "dsh-updatewhat",
+  "version": "0.2.1",
+  "description": "Agent-facing upgrade evidence for DeepSeek Harness: release notes, breaking-change commits, and a migration brief.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Linkodt",
+  "homepage": "https://github.com/Linkodt/whatsNew#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Linkodt/whatsNew.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Linkodt/whatsNew/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "upgrade",
+    "release-notes",
+    "changelog",
+    "agent"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "market.json",
+    "publishing/README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

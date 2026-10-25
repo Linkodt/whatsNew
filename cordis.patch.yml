@@ -1,0 +1,4 @@
+- insert:
+    - id: updatewhat
+      name: dsh-updatewhat
+      config: {}
