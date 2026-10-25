@@ -1,0 +1,51 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Linkodt plugins",
+    "zh": "Linkodt 插件"
+  },
+  "description": {
+    "en": "Plugins for DeepSeek Harness, maintained by Linkodt.",
+    "zh": "Linkodt 维护的 DeepSeek Harness 插件。"
+  },
+  "plugins": [
+    {
+      "name": "dsh-updatewhat",
+      "title": {
+        "en": "UpdateWhat — Upgrade Evidence",
+        "zh": "UpdateWhat 升级指南"
+      },
+      "description": {
+        "en": "Collects GitHub releases and breaking-change commits for a version range, so the agent can write an upgrade guide and carry out the migration.",
+        "zh": "抓取 GitHub 两个版本之间的 release 与破坏性提交，交给 agent 生成升级指南并完成迁移。"
+      },
+      "author": "Linkodt",
+      "homepage": "https://github.com/Linkodt/whatsNew#readme",
+      "repository": {
+        "url": "https://github.com/Linkodt/whatsNew"
+      },
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJVcGRhdGVXaGF0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0idXBkYXRld2hhdC1iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMwZWE1YTQiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjU2M2ViIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0idXJsKCN1cGRhdGV3aGF0LWJnKSIvPgogIDxwYXRoIGQ9Ik0zMiA0N1YyMSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0yMiAzMWwxMC0xMCAxMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjQ3IiBjeT0iMTciIHI9IjQiIGZpbGw9IiNmZGU2OGEiLz4KPC9zdmc+Cg==",
+      "metadata": {
+        "keywords": [
+          "upgrade",
+          "release-notes",
+          "github",
+          "dependencies",
+          "updatewhat",
+          "dsh"
+        ]
+      },
+      "versions": [
+        {
+          "version": "0.2.1",
+          "publishTimestamp": 1792899807,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/Linkodt/whatsNew",
+            "commit": "cf9097355d18b8fc0b7cea0787c41862cca9d975"
+          }
+        }
+      ]
+    }
+  ]
+}
